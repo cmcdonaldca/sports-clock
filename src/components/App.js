@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import Clock from './Clock.js';
-import Timer from './Timer.js';
-import './App.css';
+import Clock from './clock.js';
+import Timer from './timer.js';
+import '../styles/app.css';
 
 class App extends Component {
   constructor() {
