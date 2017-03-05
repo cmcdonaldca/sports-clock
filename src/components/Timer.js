@@ -2,10 +2,11 @@ import Emitter from 'es6-event-emitter';
 
 class Timer extends Emitter {
 
-    constructor(minutes, seconds) {
+    constructor(minutes, seconds, milliseconds) {
         super();
         this.minutes = minutes;
         this.seconds = seconds;
+        this.milliseconds = milliseconds;
     }
 
     start() {
@@ -13,7 +14,7 @@ class Timer extends Emitter {
 
         this.ctxId = setInterval(
             () => this.tick(),
-            1000);
+            100);
     }
 
     stop() {
@@ -21,17 +22,22 @@ class Timer extends Emitter {
     }
 
     tick() {
-        if (this.minutes === 0 && this.seconds === 0) {            
+        if (this.minutes === 0 && this.seconds === 0 && this.milliseconds === 0) {
             this.stop();
             this.trigger('end');
             return;
         }
 
-        if (this.seconds === 0) {
-            this.seconds = 59;
-            this.minutes--;
+        if (this.milliseconds === 0) {
+            this.milliseconds = 9;
+            if (this.seconds === 0) {
+                this.seconds = 59;
+                this.minutes--;
+            } else {
+                this.seconds--;
+            }
         } else {
-            this.seconds--;
+            this.milliseconds--;
         }
 
         this.trigger('tick', {
