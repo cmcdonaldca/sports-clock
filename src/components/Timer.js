@@ -7,6 +7,7 @@ class Timer extends Emitter {
         this.minutes = minutes;
         this.seconds = seconds;
         this.milliseconds = milliseconds;
+        this.ctxId = null;
     }
 
     start() {
@@ -19,6 +20,11 @@ class Timer extends Emitter {
 
     stop() {
         clearInterval(this.ctxId);
+        this.ctxId = null;
+    }
+
+    isRunning() {
+        return this.ctxId !== null;
     }
 
     tick() {

@@ -26,13 +26,26 @@ class App extends Component {
       });
   }
 
+  onTimeControlerClick() {
+    if (this.gameTimer.isRunning()) {
+      this.gameTimer.stop();
+    } else {
+      this.gameTimer.start();      
+    }
+  }
+
   render() {
     return (
       <div className="App">
         <Clock minutes={this.state.minutes} seconds={this.state.seconds} milliseconds={this.state.milliseconds} />
+          <button onClick={() => this.onTimeControlerClick()}>
+            Toggle Timer
+          </button>
       </div>
     );
   }
+
+
 }
 
 export default App;
