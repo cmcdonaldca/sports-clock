@@ -2,16 +2,19 @@ import Emitter from 'es6-event-emitter';
 
 class Timer extends Emitter {
 
-    constructor(minutes, seconds, milliseconds) {
+    constructor(timerState) {
         super();
-        this.minutes = minutes;
-        this.seconds = seconds;
-        this.milliseconds = milliseconds;
+        this.timerState = timerState;
         this.ctxId = null;
+    }
+
+    getState() {
+
     }
 
     start() {
         const _this = this;
+        this.timerState.isRunning = true;
 
         this.ctxId = setInterval(
             () => this.tick(),
@@ -20,36 +23,40 @@ class Timer extends Emitter {
 
     stop() {
         clearInterval(this.ctxId);
+        this.timerState.isRunning = false;
         this.ctxId = null;
     }
 
-    isRunning() {
-        return this.ctxId !== null;
+    toggleRunningState() {
+        if (this.timerState.isRunning) {
+            this.stop();
+        } else {
+            this.start();
+        }
+
+        return this.timerState;
     }
 
     tick() {
-        if (this.minutes === 0 && this.seconds === 0 && this.milliseconds === 0) {
+        if (this.timerState.minutes === 0 && this.timerState.seconds === 0 && this.timerState.milliseconds === 0) {
             this.stop();
             this.trigger('end');
             return;
         }
 
-        if (this.milliseconds === 0) {
-            this.milliseconds = 9;
-            if (this.seconds === 0) {
-                this.seconds = 59;
-                this.minutes--;
+        if (this.timerState.milliseconds === 0) {
+            this.timerState.milliseconds = 9;
+            if (this.timerState.seconds === 0) {
+                this.timerState.seconds = 59;
+                this.timerState.minutes--;
             } else {
-                this.seconds--;
+                this.timerState.seconds--;
             }
         } else {
-            this.milliseconds--;
+            this.timerState.milliseconds--;
         }
 
-        this.trigger('tick', {
-            minutes: this.minutes,
-            seconds: this.seconds
-        });
+        this.trigger('tick', this.timerState);
     }
 }
 
