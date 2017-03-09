@@ -1,0 +1,4 @@
+- Scoring
+- Shot Clock
+- Penalties
+- ensure there is only 1 timer
