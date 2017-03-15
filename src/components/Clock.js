@@ -8,11 +8,14 @@ class Clock extends Component {
     render() {
         var digitElements;
         if (this.props.minutes === 0 && this.props.seconds < 10) {
+
+            const milliseconds = this.props.milliseconds / 100;
+
             digitElements = (
                 <div>
                     <Number value={this.props.seconds} showLeadingZero="true" />
                     .
-                    <Number value={this.props.milliseconds} />
+                    <Number value={milliseconds} />
                 </div>);
         } else {
             digitElements = (

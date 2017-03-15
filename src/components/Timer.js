@@ -2,61 +2,59 @@ import Emitter from 'es6-event-emitter';
 
 class Timer extends Emitter {
 
-    constructor(timerState) {
+    constructor() {
         super();
-        this.timerState = timerState;
-        this.ctxId = null;
+        this.length = 0;
+        this.counter = 0;
+        this.tickOffset = 100; // 100 milliseconds
+        this.stop();
     }
 
-    getState() {
+    // length in milliseconds
+    setLength(length) {
+        this.length = length;
+    }
 
+    reset() {
+        this.stop();
+        this.counter = 0;
     }
 
     start() {
         const _this = this;
-        this.timerState.isRunning = true;
+        this.isRunning = true;
+        this.trigger('start');
 
         this.ctxId = setInterval(
             () => this.tick(),
-            100);
+            this.tickOffset);
     }
 
     stop() {
         clearInterval(this.ctxId);
-        this.timerState.isRunning = false;
+        this.isRunning = false;
         this.ctxId = null;
     }
 
     toggleRunningState() {
-        if (this.timerState.isRunning) {
+        if (this.isRunning) {
             this.stop();
         } else {
             this.start();
         }
 
-        return this.timerState;
+        return this.isRunning;
     }
 
     tick() {
-        if (this.timerState.minutes === 0 && this.timerState.seconds === 0 && this.timerState.milliseconds === 0) {
+        if (this.counter === this.length) {
             this.stop();
             this.trigger('end');
             return;
         }
 
-        if (this.timerState.milliseconds === 0) {
-            this.timerState.milliseconds = 9;
-            if (this.timerState.seconds === 0) {
-                this.timerState.seconds = 59;
-                this.timerState.minutes--;
-            } else {
-                this.timerState.seconds--;
-            }
-        } else {
-            this.timerState.milliseconds--;
-        }
-
-        this.trigger('tick', this.timerState);
+        this.counter += this.tickOffset;
+        this.trigger('tick', this.counter);
     }
 }
 
