@@ -2,11 +2,9 @@ import Emitter from 'es6-event-emitter';
 
 class Timer extends Emitter {
 
-    constructor() {
+    constructor(tickOffset) {
         super();
-        this.length = 0;
-        this.counter = 0;
-        this.tickOffset = 100; // 100 milliseconds
+        this.tickOffset = tickOffset || 100; // 100 milliseconds
         this.stop();
     }
 
@@ -15,46 +13,42 @@ class Timer extends Emitter {
         this.length = length;
     }
 
+    isRunning() {
+        return this._isRunning;
+    }
+
     reset() {
         this.stop();
-        this.counter = 0;
     }
 
     start() {
-        const _this = this;
-        this.isRunning = true;
-        this.trigger('start');
-
+        this._isRunning = true;
         this.ctxId = setInterval(
             () => this.tick(),
             this.tickOffset);
+
+        this.trigger('started');
     }
 
     stop() {
         clearInterval(this.ctxId);
-        this.isRunning = false;
+        this._isRunning = false;
         this.ctxId = null;
+        this.trigger('stopped');
     }
 
     toggleRunningState() {
-        if (this.isRunning) {
+        if (this._isRunning) {
             this.stop();
         } else {
             this.start();
         }
 
-        return this.isRunning;
+        return this._isRunning;
     }
 
     tick() {
-        if (this.counter === this.length) {
-            this.stop();
-            this.trigger('end');
-            return;
-        }
-
-        this.counter += this.tickOffset;
-        this.trigger('tick', this.counter);
+        this.trigger('tick');
     }
 }
 

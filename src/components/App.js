@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Clock from './clock.js';
+import ShotClock from './shot-clock.js';
 import Timer from './timer.js';
 import TimerToggle from './timer-toggle.js';
 import TeamScore from './team-score.js';
@@ -9,7 +10,7 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      gameTimerLength : 10 * 1000, // 2 minutes
+      gameTimerLength : 2*60 * 1000, // 2 minutes
       gameTimerCounter : 0,
       gameTimerRunningStatus : false,
       gameTimerClock : {
@@ -35,18 +36,23 @@ class App extends Component {
         seconds: 30,
         milliseconds: 0
       },
-      shotTimerLength : 30 * 1000 // 30 seconds
+      shotTimerCounter: 0,
+      shotTimerLength : 30 * 1000, // 30 seconds
+      shotTimerEnabled: true,
+      buzzer: false
     };
 
-    this.gameTimer = new Timer();
+    this.tickOffset = 100; // 100 milliseconds
+
+    this.gameTimer = new Timer(this.tickOffset);
     this.gameTimer.setLength(this.state.gameTimerLength);
     this.gameTimer.on('tick', 
       (state) => this.onGameTimerTick(state)
     );
-    this.gameTimer.on('end', 
+    this.gameTimer.on('stopped', 
       (state) => this.onGameTimerEnd(state)
     );
-    this.gameTimer.on('start', 
+    this.gameTimer.on('started', 
       (state) => this.onGameTimerStart(state)
     );
   }
@@ -54,57 +60,75 @@ class App extends Component {
   componentWillMount() {
     this.updateClocks();
   }
-  onGameTimerTick(state) {
-    // if (this.state.shotTimer.isInUse) {
-    //   if (this.state.shotTimer.minutes === 0 
-    //     && this.state.shotTimer.seconds === 0
-    //     && this.state.shotTimer.milliseconds === 0) {
-    //     this.setState({
-    //       shotTimer : {
-    //         minutes : this.state.shotTimerSettings.setMinutes,
-    //         seconds: this.state.shotTimerSettings.setSeconds,
-    //         milliseconds: 0,
-    //         isInUse: false
-    //       }
-    //     });
-    //     alert("BUZZER");
-    //   } else {
-    //     this.setState((prevState, props) => ({
-    //       shotTimer : {
-    //         minutes : this.state.shotTimerSettings.setMinutes,
-    //         seconds: this.state.shotTimerSettings.setSeconds,
-    //         milliseconds: 0,
-    //         isInUse: false
-    //       }
-    //     }));
-        
-    //   }
-    // }
-
-    this.setState({
-      gameTimerCounter: state
+  onGameTimerTick() {
+    this.setState((prevState, props) => {
+      return {
+        gameTimerCounter: prevState.gameTimerCounter + this.tickOffset,
+        shotTimerCounter: (prevState.shotTimerCounter + (prevState.shotTimerEnabled ? this.tickOffset : 0))
+      }
     }, this.updateClocks);
   }
 
   updateClocks() {
-    const gameTime = this.state.gameTimerLength - this.state.gameTimerCounter;
+
+    const gameTimerClock = this._getClockData(this.state.gameTimerLength - this.state.gameTimerCounter);
+    const shotTimerClock = this._getClockData(this.state.shotTimerLength - this.state.shotTimerCounter);
+
+    this.setState({
+      gameTimerClock,
+      shotTimerClock
+     }, this.checkForBuzzer);
+  }
+
+  checkForBuzzer() {
+    const gameTimerTimeLeft = this.state.gameTimerLength - this.state.gameTimerCounter;
+    const shotTimerTimeLeft = this.state.shotTimerLength - this.state.shotTimerCounter;
+    if (this.gameTimer.isRunning() && (gameTimerTimeLeft === 0 || shotTimerTimeLeft === 0)) {
+
+      this.gameTimer.stop();
+
+      const newState = {
+        buzzer: true
+      };
+
+      // reset the shot clock
+      if (shotTimerTimeLeft === 0) {
+        newState["shotTimerCounter"] = 0;
+      }
+
+      this.setState(newState);
+
+      // Turn the buzzer off after X seconds
+      setTimeout(
+        () => this._onBuzzerEnd(),
+        3000);
+    }    
+  }
+
+  _onBuzzerEnd() {
+    this.setState({
+      buzzer: false
+    });
+  }
+
+  _getClockData(gameTime) {
+    if (gameTime < 0) {
+      return {
+        minutes: 0, seconds: 0, milliseconds: 0
+      };
+    }
     const minutes = Math.floor(gameTime / 60 / 1000);
     const seconds = Math.floor((gameTime - minutes * 60 * 1000) / 1000);
     const milliseconds = gameTime - (minutes * 60 * 1000) - (seconds * 1000);
-
-    this.setState({
-      gameTimerClock: {
-        minutes,
-        seconds,
-        milliseconds
-    }});
+    return {
+      minutes, seconds, milliseconds
+    };
   }
 
   onGameTimerEnd(state) {
-    alert("BUZZER");
     this.setState({
       gameTimerRunningStatus: false
-    });    
+    });
   }
 
   onGameTimerStart(state) {
@@ -127,15 +151,24 @@ class App extends Component {
     }));
   }
 
+  onShotClockStateChange(state) {
+    this.setState(state, this.updateClocks);
+  }
+
   render() {
     return (
-      <div className="App">
+      <div className="App" data-buzzer={this.state.buzzer}>
         <Clock minutes={this.state.gameTimerClock.minutes} seconds={this.state.gameTimerClock.seconds} milliseconds={this.state.gameTimerClock.milliseconds} />
         <TimerToggle timerIsOn={this.state.gameTimerRunningStatus}  onClick={() => this.onTimeControlerClick()} />
         <TeamScore value={this.state.home} name="Home" onScoreChangeClick={(incrementBy) => this.onScoreChangeClick("home", incrementBy)} />
         <TeamScore value={this.state.away} name="Away" onScoreChangeClick={(incrementBy) => this.onScoreChangeClick("away", incrementBy)} />
 
-        <Clock minutes={this.state.shotTimerClock.minutes} seconds={this.state.shotTimerClock.seconds} milliseconds={this.state.shotTimerClock.milliseconds} />
+        <ShotClock 
+          shotTimerEnabled={this.state.shotTimerEnabled}
+          onStateChange={(state) => this.onShotClockStateChange(state)}
+          minutes={this.state.shotTimerClock.minutes} 
+          seconds={this.state.shotTimerClock.seconds} 
+          milliseconds={this.state.shotTimerClock.milliseconds} />
 
       </div>
     );
