@@ -9,9 +9,9 @@ class Number extends Component {
         let digitElements = digits.map((digit, index) => <Digit key={index} value={digit} />);
         const className = "number-" + (this.props.size || "large");
         return (
-            <div className={className}>
+            <span className={className}>
               {digitElements}
-            </div>
+            </span>
         );
     }
 }

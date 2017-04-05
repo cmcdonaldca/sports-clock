@@ -1,34 +1,35 @@
 import React, { Component } from 'react';
 import Number from './number';
+import { Panel } from 'react-bootstrap';
 
 class Clock extends Component {
     intToDigitElements(timeInt) {
 
     }
     render() {
-        var digitElements;
+        var clockElements;
         if (this.props.minutes === 0 && this.props.seconds < 10) {
 
             const milliseconds = this.props.milliseconds / 100;
 
-            digitElements = (
-                <div>
+            clockElements = (
+                <Panel>
                     <Number value={this.props.seconds} showLeadingZero="true" />
                     .
                     <Number value={milliseconds} />
-                </div>);
+                </Panel>);
         } else {
-            digitElements = (
-                <div>
+            clockElements = (
+                <Panel>
                     <Number value={this.props.minutes} />
                     :
                     <Number value={this.props.seconds} showLeadingZero="true" />
-                </div>);
+                </Panel>);
         }
 
         return (
-            <div className="clock">
-                {digitElements}
+            <div>
+                {clockElements}
             </div>);
     }
 }

@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
+import { Button } from 'react-bootstrap';
 
 class TimerToggle extends Component {
     render() {
         var text = this.props.timerIsOn ? "Stop" : "Start";
         
         return (
-            <button onClick={() => this.props.onClick()}>
+            <Button bsStyle="primary" bsSize="large" onClick={() => this.props.onClick()}>
                 {text}
-            </button>);
+            </Button>);
     }
 }
 

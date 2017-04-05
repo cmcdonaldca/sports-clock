@@ -4,13 +4,13 @@ import ShotClock from './shot-clock.js';
 import Timer from './timer.js';
 import TimerToggle from './timer-toggle.js';
 import TeamScore from './team-score.js';
-import '../styles/app.css';
+import { Grid, Row, Col, PageHeader } from 'react-bootstrap';
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      gameTimerLength : 2*60 * 1000, // 2 minutes
+      gameTimerLength : 3*60 * 1000, // 2 minutes
       gameTimerCounter : 0,
       gameTimerRunningStatus : false,
       gameTimerClock : {
@@ -157,19 +157,35 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App" data-buzzer={this.state.buzzer}>
-        <Clock minutes={this.state.gameTimerClock.minutes} seconds={this.state.gameTimerClock.seconds} milliseconds={this.state.gameTimerClock.milliseconds} />
-        <TimerToggle timerIsOn={this.state.gameTimerRunningStatus}  onClick={() => this.onTimeControlerClick()} />
-        <TeamScore value={this.state.home} name="Home" onScoreChangeClick={(incrementBy) => this.onScoreChangeClick("home", incrementBy)} />
-        <TeamScore value={this.state.away} name="Away" onScoreChangeClick={(incrementBy) => this.onScoreChangeClick("away", incrementBy)} />
+      <div>
+      <PageHeader>Scoreboard <small>Hockey</small></PageHeader>
+      <Grid>
+        <Row className="show-grid">
+          <Col md={6}>
+            <TeamScore value={this.state.home} name="Home" onScoreChangeClick={(incrementBy) => this.onScoreChangeClick("home", incrementBy)} />
+          </Col>
+          <Col md={6}>
+            <TeamScore value={this.state.away} name="Away" onScoreChangeClick={(incrementBy) => this.onScoreChangeClick("away", incrementBy)} />
+          </Col>
+        </Row>
+        <Row className="show-grid">
+          <Col md={6} mdOffset={3}>
+            <Clock minutes={this.state.gameTimerClock.minutes} seconds={this.state.gameTimerClock.seconds} milliseconds={this.state.gameTimerClock.milliseconds} />
+            <TimerToggle timerIsOn={this.state.gameTimerRunningStatus}  onClick={() => this.onTimeControlerClick()} />
+          </Col>
+        </Row>
+        <Row className="show-grid">
+          <Col md={6} mdOffset={3}>
 
-        <ShotClock 
-          shotTimerEnabled={this.state.shotTimerEnabled}
-          onStateChange={(state) => this.onShotClockStateChange(state)}
-          minutes={this.state.shotTimerClock.minutes} 
-          seconds={this.state.shotTimerClock.seconds} 
-          milliseconds={this.state.shotTimerClock.milliseconds} />
-
+            <ShotClock 
+              shotTimerEnabled={this.state.shotTimerEnabled}
+              onStateChange={(state) => this.onShotClockStateChange(state)}
+              minutes={this.state.shotTimerClock.minutes} 
+              seconds={this.state.shotTimerClock.seconds} 
+              milliseconds={this.state.shotTimerClock.milliseconds} />
+          </Col>
+        </Row>
+      </Grid>
       </div>
     );
   }
